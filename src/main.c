@@ -61,10 +61,10 @@ int main(void) {
   // Reset the display by pulling the reset pin low,
   // delaying a bit, then pulling it high.
   GPIOB->ODR &= ~(1 << PB_RST);
-  // Delay at least 100ms; meh, call it 10 million no-ops.
-  delay_cycles(10000000);
+  // Delay at least 100ms; meh, call it 2 million no-ops.
+  delay_cycles(2000000);
   GPIOB->ODR |=  (1 << PB_RST);
-  delay_cycles(10000000);
+  delay_cycles(2000000);
 
   // Send initialization commands for a 96x64 display.
   // TODO: Constants/macros for command values.
@@ -72,10 +72,12 @@ int main(void) {
   sspi_cmd(0xAE);
   // 'Remap display settings'.
   sspi_cmd(0xA0);
-  // We just want 65K colors format 1 (bits [7:6] = 01).
-  sspi_cmd(0x70);
-  // (Or, also set bit 2 to flip the display vertically.)
-  //sspi_cmd(0x72);
+  // We just want two options:
+  // '65K colors format 1' (bits [7:6] = 01).
+  // 'COM Odd/Even Switch' (bit 5 = 1).
+  sspi_cmd(0x60);
+  // (Or, for 'BGR' instead of 'RGB':)
+  //sspi_cmd(0x64);
   // 'Start line.'
   sspi_cmd(0xA1);
   sspi_cmd(0x00);
@@ -135,7 +137,49 @@ int main(void) {
   // (Main loop - draw to the screen.)
   // Uh...soon. TODO
   uint16_t px_i = 0;
+  uint16_t px_col = 0;
+  uint16_t px_val = 0;
   while (1) {
-    px_i += 1;
+    // Set column range.
+    sspi_cmd(0x15);
+    sspi_cmd(0);
+    sspi_cmd(95);
+    // Set row range.
+    sspi_cmd(0x75);
+    sspi_cmd(0);
+    sspi_cmd(63);
+    // Draw the buffer.
+    for (px_i = 0; px_i < OLED_BUF_SIZE; ++px_i) {
+      px_col = oled_buffer[px_i] >> 4;
+      if (px_col == 0) {
+        px_val = OLED_BLK;
+      }
+      else if (px_col == 1) {
+        px_val = OLED_LGRN;
+      }
+      else if (px_col == 2) {
+        px_val = OLED_MGRN;
+      }
+      else if (px_col == 3) {
+        px_val = OLED_DGRN;
+      }
+      sspi_w(px_val >> 8);
+      sspi_w(px_val & 0x00FF);
+      px_col = oled_buffer[px_i] & 0x0F;
+      if (px_col == 0) {
+        px_val = OLED_BLK;
+      }
+      else if (px_col == 1) {
+        px_val = OLED_LGRN;
+      }
+      else if (px_col == 2) {
+        px_val = OLED_MGRN;
+      }
+      else if (px_col == 3) {
+        px_val = OLED_DGRN;
+      }
+      sspi_w(px_val >> 8);
+      sspi_w(px_val & 0x00FF);
+    }
   }
 }

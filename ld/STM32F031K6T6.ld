@@ -8,8 +8,8 @@ _estack = 0x20001000;
 /* Set minimum size for stack and dynamic memory. */
 /* (The linker will generate an error if there is
  * less than this much RAM leftover.) */
-/* (1KB) */
-_Min_Leftover_RAM = 0x400;
+/* (512B) */
+_Min_Leftover_RAM = 0x200;
 
 MEMORY
 {
