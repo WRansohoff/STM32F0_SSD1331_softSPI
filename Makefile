@@ -46,6 +46,7 @@ AS_SRC   =  ./src/core.S
 AS_SRC   += ./src/vector_table.S
 C_SRC    =  ./src/main.c
 C_SRC    += ./src/sspi.c
+C_SRC    += ./src/util.c
 
 INCLUDE  =  -I./
 INCLUDE  += -I./device_headers

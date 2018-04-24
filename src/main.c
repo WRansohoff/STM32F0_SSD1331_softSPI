@@ -1,15 +1,5 @@
 #include "main.h"
 
-// Simple delay method, with instructions not to optimize.
-// It doesn't accurately delay a precise # of cycles,
-// it's just a rough scale.
-void __attribute__((optimize("O0"))) delay_cycles(uint32_t cyc) {
-  uint32_t d_i;
-  for (d_i = 0; d_i < cyc; ++d_i) {
-    asm("NOP");
-  }
-}
-
 /**
  * Main program.
  */
@@ -67,72 +57,7 @@ int main(void) {
   delay_cycles(2000000);
 
   // Send initialization commands for a 96x64 display.
-  // TODO: Constants/macros for command values.
-  // 'Display off'.
-  sspi_cmd(0xAE);
-  // 'Remap display settings'.
-  sspi_cmd(0xA0);
-  // We just want two options:
-  // '65K colors format 1' (bits [7:6] = 01).
-  // 'COM Odd/Even Switch' (bit 5 = 1).
-  sspi_cmd(0x60);
-  // (Or, for 'BGR' instead of 'RGB':)
-  //sspi_cmd(0x64);
-  // 'Start line.'
-  sspi_cmd(0xA1);
-  sspi_cmd(0x00);
-  // 'Display Offset'.
-  sspi_cmd(0xA2);
-  sspi_cmd(0x00);
-  // 'Normal Display Mode.'
-  sspi_cmd(0xA4);
-  // 'Set Multiplexing'.
-  // (I think 64 should be the reset default, but...)
-  sspi_cmd(0xA8);
-  sspi_cmd(0x3F);
-  // 'Set Master Display Voltage Source'.
-  // This is not a choice; the SSD1331 only accepts
-  // external voltage. But I guess it should be set.
-  sspi_cmd(0xAD);
-  sspi_cmd(0x8E);
-  // 'Set Power Save Mode'. 0x1A = On, 0x0B = Off.
-  sspi_cmd(0xB0);
-  sspi_cmd(0x0B);
-  // 'Set Precharge Adjustment'.
-  sspi_cmd(0xB1);
-  sspi_cmd(0x31);
-  // 'Set Clock Divider Frequency'.
-  // [7:4] = osc frequency, [3:0]+1 = div ratio.
-  sspi_cmd(0xF0);
-  // 'Set Precharge A'.
-  sspi_cmd(0x8A);
-  sspi_cmd(0x64);
-  // 'Set Precharge B'.
-  sspi_cmd(0x8B);
-  sspi_cmd(0x78);
-  // 'Set Precharge C'.
-  sspi_cmd(0x8C);
-  sspi_cmd(0x64);
-  // 'Set Precharge Level'.
-  sspi_cmd(0xBB);
-  sspi_cmd(0x3A);
-  // 'Set COM Deselect Voltage Level'. (to 0.83 * VCC)
-  sspi_cmd(0xBE);
-  sspi_cmd(0x3E);
-  // 'Set Master Current Division'. (~'Set Brightness')
-  sspi_cmd(0x87);
-  sspi_cmd(0x06);
-  // 'Set Contrast A'.
-  sspi_cmd(0x81);
-  sspi_cmd(0x91);
-  // 'Set Contrast B'.
-  sspi_cmd(0x82);
-  sspi_cmd(0x50);
-  // 'Set Contrast C'.
-  sspi_cmd(0x83);
-  sspi_cmd(0x7D);
-  // 'Display On'.
-  sspi_cmd(0xAF);
+  ssd1331_init();
 
   // (Main loop - draw to the screen.)
   // Uh...soon. TODO
@@ -140,14 +65,6 @@ int main(void) {
   uint16_t px_col = 0;
   uint16_t px_val = 0;
   while (1) {
-    // Set column range.
-    sspi_cmd(0x15);
-    sspi_cmd(0);
-    sspi_cmd(95);
-    // Set row range.
-    sspi_cmd(0x75);
-    sspi_cmd(0);
-    sspi_cmd(63);
     // Draw the buffer.
     for (px_i = 0; px_i < OLED_BUF_SIZE; ++px_i) {
       px_col = oled_buffer[px_i] >> 4;

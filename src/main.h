@@ -8,6 +8,7 @@
 
 // Project includes.
 #include "sspi.h"
+#include "util.h"
 
 // OLED logo colors.
 #define OLED_BLK  (0x0000)
