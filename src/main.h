@@ -30,7 +30,6 @@ static uint16_t oled_colors[16] = {
   0x0000, 0x0000, 0x0000, 0x0000,
   0x0000, 0x0000, 0x0000, 0x0000
 };
-// TODO: Make the color definitions modify-able.
 #define OLED_BUF_SIZE ((96 * 64) / 2)
 // Default to a 'V' logo.
 static uint8_t oled_buffer[OLED_BUF_SIZE] = {

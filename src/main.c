@@ -65,27 +65,17 @@ int main(void) {
 
   // (Main loop - draw to the screen.)
   uint16_t px_i = 0;
-  uint16_t px_col = 0;
+  uint8_t px_col = 0;
   uint16_t px_val = 0;
   while (1) {
     // Draw the buffer.
     for (px_i = 0; px_i < OLED_BUF_SIZE; ++px_i) {
       px_col = oled_buffer[px_i] >> 4;
-      if (px_col >= 0 && px_col <= 15) {
-        px_val = oled_colors[px_col];
-      }
-      else {
-        px_val = OLED_BLK;
-      }
+      px_val = oled_colors[px_col];
       sspi_w(px_val >> 8);
       sspi_w(px_val & 0x00FF);
       px_col = oled_buffer[px_i] & 0x0F;
-      if (px_col >= 0 && px_col <= 15) {
-        px_val = oled_colors[px_col];
-      }
-      else {
-        px_val = OLED_BLK;
-      }
+      px_val = oled_colors[px_col];
       sspi_w(px_val >> 8);
       sspi_w(px_val & 0x00FF);
     }

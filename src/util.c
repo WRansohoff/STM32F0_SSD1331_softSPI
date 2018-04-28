@@ -36,7 +36,7 @@ void ssd1331_init(void) {
   sspi_cmd(0x83);
   sspi_cmd(0x80);
   // 'Set Master Current Control' - default is 15, but
-  // use 8 for ~half.
+  // use 8 for ~half. (~= 'Set Brightness')
   sspi_cmd(0x87);
   sspi_cmd(0x08);
   // 'Set Precharge A' - default is 'Color A Contrast'.
