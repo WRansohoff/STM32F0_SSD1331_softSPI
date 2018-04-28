@@ -6,6 +6,7 @@ void ssd1331_init(void) {
   // Instead of taking an existing library's word for
   // these, use a command sequence listed in the
   // SSD1331 datasheet's "Command Table", Section 8.
+  // (But check out Adafruit for boards and a library!)
   // That table may be sorted by hex value rather than
   // ideal command ordering, but let's see what happens.
   // 'Unlock Display.' - 0xFD/0x16 can 'Lock' it,
@@ -25,28 +26,28 @@ void ssd1331_init(void) {
   sspi_cmd(0x00);
   sspi_cmd(0x3F);
 
-  // 'Set Color A Contrast' - default is 128, use 145.
+  // 'Set Color A Contrast' - default is 128.
   sspi_cmd(0x81);
-  sspi_cmd(0x91);
-  // 'Set Color B Contrast' - default is 128, use 80.
+  sspi_cmd(0x80);
+  // 'Set Color B Contrast' - default is 128, use 96.
   sspi_cmd(0x82);
-  sspi_cmd(0x50);
-  // 'Set Color C Contrast' - default is 128, use 125.
+  sspi_cmd(0x60);
+  // 'Set Color C Contrast' - default is 128.
   sspi_cmd(0x83);
-  sspi_cmd(0x7D);
+  sspi_cmd(0x80);
   // 'Set Master Current Control' - default is 15, but
   // use 8 for ~half.
   sspi_cmd(0x87);
   sspi_cmd(0x08);
   // 'Set Precharge A' - default is 'Color A Contrast'.
   sspi_cmd(0x8A);
-  sspi_cmd(0x64);
+  sspi_cmd(0x80);
   // 'Set Precharge B' - default is 'Color B Contrast'.
   sspi_cmd(0x8B);
-  sspi_cmd(0x78);
+  sspi_cmd(0x60);
   // 'Set Precharge C' - default is 'Color C Contrast'.
   sspi_cmd(0x8C);
-  sspi_cmd(0x64);
+  sspi_cmd(0x80);
   // 'Remap Display Settings' - default is 0x40.
   // Use 0x60 to avoid drawing lines in odd-even order.
   sspi_cmd(0xA0);
@@ -80,12 +81,12 @@ void ssd1331_init(void) {
   // precharge stage 2 period, bits [3:0] set phase 1.
   // Default is 0x74.
   sspi_cmd(0xB1);
-  sspi_cmd(0x31);
+  sspi_cmd(0x74);
   // 'Set Clock Divider Frequency'. Bits [7:4] set the
   // oscillator frequency, bits [3:0]+1 set the
-  // clock division ratio.
+  // clock division ratio. Default is 0xD0.
   sspi_cmd(0xB3);
-  sspi_cmd(0xF0);
+  sspi_cmd(0xD0);
   // (I am going to ignore the 'Set Grayscale Table'
   // command - it has a bunch of gamma curve settings.)
   // So, the 'Reset to Default Grayscale Table'
@@ -93,7 +94,7 @@ void ssd1331_init(void) {
   sspi_cmd(0xB9);
   // 'Set Precharge Level'. Default is 0x3E.
   sspi_cmd(0xBB);
-  sspi_cmd(0x3A);
+  sspi_cmd(0x3E);
   // 'Set Logic 0 Threshold'. Default is 0x3E = 0.83*VCC.
   sspi_cmd(0xBE);
   sspi_cmd(0x3E);
