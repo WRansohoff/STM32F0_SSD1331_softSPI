@@ -4,7 +4,11 @@
 // Standard C includes.
 #include <stdint.h>
 // Vendor-provided STM32 includes.
-#include "stm32f031x6.h"
+#ifdef VVC_F0
+  #include "stm32f031x6.h"
+#elif  VVC_L0
+  #include "stm32l031xx.h"
+#endif
 
 // Project includes.
 #include "sspi.h"

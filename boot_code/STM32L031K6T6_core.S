@@ -8,7 +8,7 @@
  */
 
 .syntax unified
-.cpu cortex-m0
+.cpu cortex-m0plus
 .fpu softvfp
 .thumb
 
@@ -71,18 +71,47 @@ reset_handler:
   reset_chip_state:
     // Clock registers:
     // rcc_cr_base:           0x40021000
-    // rcc_cfgr_base:         0x40021004
-    // rcc_cir_base:          0x40021008
-    // rcc_cfgr2_base:        0x4002102C
-    // rcc_cfgr3_base:        0x40021030
-    // rcc_cr2_base:          0x40021034
-    // When the system boots, HSI is enabled and selected
-    // as the clock source. So that's already done.
-    // Configure the PLL to (HSI / 2) * 12. (PLLMUL: 0xA)
-    // (PLLSRC should already be set to 0 for HSI/2.)
-    LDR  r0, =0x40021004
-    LDR  r2, =0x00280000
+    // rcc_cfgr_base:         0x4002100C
+    // rcc_cier_base:         0x40021010
+    // Disable RCC interrupts.
+    LDR  r0, =0x40021010
+    LDR  r2, =0x00000000
+    STR  r2, [r0]
+    // Reset/set the Flash ACR to enable prefetching and
+    // use a 1-wait state.
+    LDR  r0, =0x40022000
+    LDR  r2, =0xFFFFFFFC
     LDR  r1, [r0]
+    ANDS r1, r1, r2
+    LDR  r2, =0x00000003
+    ORRS r1, r1, r2
+    STR  r1, [r0]
+    // The L0 line has a 16MHz HSI, not 8MHz.
+    // But it boots to a 2MHz 'MSI' oscillator.
+    // So, enable the HSI16 oscillator.
+    LDR  r0, =0x40021000
+    LDR  r2, =0x00000001
+    LDR  r1, [r0]
+    ORRS r1, r1, r2
+    STR  r1, [r0]
+    // And wait for the HSI oscillator to stabilize.
+    LDR  r2, =0x00000004
+    hsi16_ready_loop:
+      LDR  r1, [r0]
+      ANDS r1, r1, r2
+      // TODO: If ANDS sets status bits, is CMP needed?
+      CMP  r1, r2
+      BEQ  hsi16_ready_done
+      B    hsi16_ready_loop
+    hsi16_ready_done:
+    // Configure the PLL to (HSI / 2) * 4.
+    // So, PLLDIV = 0b01 and PLLMUL = 0b0001
+    // (Also reset PLLSRC, why not)
+    LDR  r0, =0x4002100C
+    LDR  r2, =0xFF02FFFF
+    LDR  r1, [r0]
+    ANDS r1, r1, r2
+    LDR  r2, =0x00440000
     ORRS r1, r1, r2
     STR  r1, [r0]
     // Enable the PLL.
@@ -102,21 +131,20 @@ reset_handler:
     pll_ready_done:
 
     // Select the PLL as the system clock source.
-    LDR  r0, =0x40021004
+    LDR  r0, =0x4002100C
     LDR  r2, =0xFFFFFFFC
     LDR  r1, [r0]
     ANDS r1, r1, r2
     STR  r1, [r0]
-    LDR  r2, =0x00000002
+    LDR  r2, =0x00000003
     LDR  r1, [r0]
     ORRS r1, r1, r2
     STR  r1, [r0]
     // Wait for PLL to be the system clock source.
-    LDR  r2, =0x00000008
-    LDR  r3, =0x0000000C
+    LDR  r2, =0x0000000C
     pll_is_sys_clock_loop:
       LDR  r1, [r0]
-      ANDS r1, r1, r3
+      ANDS r1, r1, r2
       CMP  r1, r2
       BEQ  pll_is_sys_clock_done
       B    pll_is_sys_clock_loop

@@ -1,8 +1,24 @@
 TARGET = main
 
+# Default target chip.
+MCU ?= STM32F031K6
+#MCU ?= STM32L031K6
+
+ifeq ($(MCU), STM32F031K6)
+	MCU_FILES = STM32F031K6T6
+	MCU_CLASS = F0
+else ifeq ($(MCU), STM32L031K6)
+	MCU_FILES = STM32L031K6T6
+	MCU_CLASS = L0
+endif
+
 # Define the linker script location and chip architecture.
-LD_SCRIPT = STM32F031K6T6.ld
-MCU_SPEC  = cortex-m0
+LD_SCRIPT = $(MCU_FILES).ld
+ifeq ($(MCU_CLASS), F0)
+	MCU_SPEC = cortex-m0
+else ifeq ($(MCU_CLASS), L0)
+	MCU_SPEC = cortex-m0plus
+endif
 
 # Toolchain definitions (ARM bare metal defaults)
 TOOLCHAIN = /usr
@@ -21,6 +37,7 @@ ASFLAGS += -mthumb
 ASFLAGS += -Wall
 # (Set error messages to appear on a single line.)
 ASFLAGS += -fmessage-length=0
+ASFLAGS += -DVVC_$(MCU_CLASS)
 
 # C compilation directives
 CFLAGS += -mcpu=$(MCU_SPEC)
@@ -31,6 +48,7 @@ CFLAGS += -g
 CFLAGS += -fmessage-length=0
 # (Set system to ignore semihosted junk)
 CFLAGS += --specs=nosys.specs
+CFLAGS += -DVVC_$(MCU_CLASS)
 
 # Linker directives.
 LSCRIPT = ./ld/$(LD_SCRIPT)
@@ -42,8 +60,8 @@ LFLAGS += -nostdlib
 LFLAGS += -lgcc
 LFLAGS += -T$(LSCRIPT)
 
-AS_SRC   =  ./src/core.S
-AS_SRC   += ./src/vector_table.S
+AS_SRC   =  ./boot_code/$(MCU_FILES)_core.S
+AS_SRC   += ./vector_tables/$(MCU_FILES)_vt.S
 C_SRC    =  ./src/main.c
 C_SRC    += ./src/sspi.c
 C_SRC    += ./src/util.c

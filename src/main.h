@@ -4,7 +4,11 @@
 // Standard C includes.
 #include <stdint.h>
 // Vendor-provided STM32 includes.
-#include "stm32f031x6.h"
+#ifdef VVC_F0
+  #include "stm32f031x6.h"
+#elif  VVC_L0
+  #include "stm32l031xx.h"
+#endif
 
 // Project includes.
 #include "sspi.h"
@@ -19,6 +23,13 @@
 // OLED framebuffer.
 // To fit in 4KB of SRAM, use 4 bits per pixel, to
 // map to up to 16 colors defined above. So, 2px per byte.
+// Color palette.
+static uint16_t oled_colors[16] = {
+  OLED_BLK, OLED_LGRN, OLED_MGRN, OLED_DGRN,
+  0x0000, 0x0000, 0x0000, 0x0000,
+  0x0000, 0x0000, 0x0000, 0x0000,
+  0x0000, 0x0000, 0x0000, 0x0000
+};
 // TODO: Make the color definitions modify-able.
 #define OLED_BUF_SIZE ((96 * 64) / 2)
 // Default to a 'V' logo.

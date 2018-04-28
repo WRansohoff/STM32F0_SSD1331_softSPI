@@ -4,8 +4,12 @@
  * Main program.
  */
 int main(void) {
-  // Enable the GPIOB peripheral in 'RCC_AHBENR'.
-  RCC->AHBENR   |= RCC_AHBENR_GPIOBEN;
+  // Enable the GPIOB peripheral.
+  #ifdef VVC_F0
+    RCC->AHBENR   |= RCC_AHBENR_GPIOBEN;
+  #elif  VVC_L0
+    RCC->IOPENR   |= RCC_IOPENR_IOPBEN;
+  #endif
   /* Initialize the GPIOB pins.
    * For software sspi with no MISO, use push-pull
    * outputs at high speed for each pin. */
@@ -60,7 +64,6 @@ int main(void) {
   ssd1331_init();
 
   // (Main loop - draw to the screen.)
-  // Uh...soon. TODO
   uint16_t px_i = 0;
   uint16_t px_col = 0;
   uint16_t px_val = 0;
@@ -68,32 +71,20 @@ int main(void) {
     // Draw the buffer.
     for (px_i = 0; px_i < OLED_BUF_SIZE; ++px_i) {
       px_col = oled_buffer[px_i] >> 4;
-      if (px_col == 0) {
+      if (px_col >= 0 && px_col <= 15) {
+        px_val = oled_colors[px_col];
+      }
+      else {
         px_val = OLED_BLK;
-      }
-      else if (px_col == 1) {
-        px_val = OLED_LGRN;
-      }
-      else if (px_col == 2) {
-        px_val = OLED_MGRN;
-      }
-      else if (px_col == 3) {
-        px_val = OLED_DGRN;
       }
       sspi_w(px_val >> 8);
       sspi_w(px_val & 0x00FF);
       px_col = oled_buffer[px_i] & 0x0F;
-      if (px_col == 0) {
+      if (px_col >= 0 && px_col <= 15) {
+        px_val = oled_colors[px_col];
+      }
+      else {
         px_val = OLED_BLK;
-      }
-      else if (px_col == 1) {
-        px_val = OLED_LGRN;
-      }
-      else if (px_col == 2) {
-        px_val = OLED_MGRN;
-      }
-      else if (px_col == 3) {
-        px_val = OLED_DGRN;
       }
       sspi_w(px_val >> 8);
       sspi_w(px_val & 0x00FF);
